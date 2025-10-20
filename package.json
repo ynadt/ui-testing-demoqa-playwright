@@ -1,0 +1,43 @@
+{
+  "name": "ui-testing-demoqa-playwright",
+  "version": "1.0.0",
+  "description": "UI testing practice task for demoqa.com using Playwright (JavaScript, POM, cross-browser)",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "prepare": "playwright install --with-deps",
+    "test": "playwright test",
+    "test:report": "playwright show-report",
+    "test:grep": "playwright test --grep @runThis",
+    "test:1920": "cross-env VIEWPORT_WIDTH=1920 VIEWPORT_HEIGHT=1080 playwright test",
+    "test:1366": "cross-env VIEWPORT_WIDTH=1366 VIEWPORT_HEIGHT=768 playwright test",
+    "test:ci": "playwright test --workers=4",
+    "clean": "rimraf playwright-report test-results"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ynadt/ui-testing-demoqa-playwright.git"
+  },
+  "keywords": [
+    "playwright",
+    "ui-testing",
+    "demoqa",
+    "automation",
+    "javascript",
+    "pom"
+  ],
+  "author": "Yuliya Nadtacheyeva",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ynadt/ui-testing-demoqa-playwright/issues"
+  },
+  "homepage": "https://github.com/ynadt/ui-testing-demoqa-playwright#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "cross-env": "^7.0.3",
+    "rimraf": "^6.0.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
