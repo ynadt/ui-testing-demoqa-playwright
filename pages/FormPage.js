@@ -8,6 +8,8 @@ export class FormPage extends BasePage {
     this.firstName = page.locator('#firstName');
     this.lastName = page.locator('#lastName');
     this.email = page.locator('#userEmail');
+    //TODO:  This selector is based on a CSS style class, which can change frequently and break your tests.
+    //  Prefer using more stable attributes such as data-testid, aria-label, or unique element identifiers for better maintainability.
     this.genderFemale = page.locator('label[for="gender-radio-2"]');
     this.mobile = page.locator('#userNumber');
     this.subjects = page.locator('#subjectsInput');
@@ -62,7 +64,7 @@ export class FormPage extends BasePage {
 
   async getModalTableData() {
     await this.modal.waitFor({ state: 'visible', timeout: 10000 });
-
+//TODO remove all locators to the constructors
     const tableRows = this.page.locator('.modal-body table tbody tr');
     const rowCount = await tableRows.count();
 
