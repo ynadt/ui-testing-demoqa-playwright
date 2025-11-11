@@ -22,14 +22,14 @@ export default defineConfig({
   /* Reporter */
   reporter: [['html', { open: 'never' }]],
 
-  /* Default options for all tests */
+  // Default options for all tests
   use: {
     baseURL: 'https://demoqa.com',
     viewport: { width, height },
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'retain-on-failure',
-  },
+},
 
   /* Configure browsers (Chrome + Firefox) */
   projects: [
@@ -48,7 +48,7 @@ export default defineConfig({
     // },
   ],
 
-  /* Optional dev server block if later test localhost apps */
+  // Optional: uncomment if testing local dev server later
   // webServer: {
   //   command: 'npm run start',
   //   url: 'http://localhost:3000',

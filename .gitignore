@@ -143,6 +143,7 @@ vite.config.ts.timestamp-*
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+/test-artifacts/
 
 # IDE / Editor
 .idea/

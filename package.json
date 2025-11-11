@@ -33,6 +33,7 @@
   },
   "homepage": "https://github.com/ynadt/ui-testing-demoqa-playwright#readme",
   "devDependencies": {
+    "@faker-js/faker": "^10.1.0",
     "@playwright/test": "^1.56.1",
     "cross-env": "^7.0.3",
     "rimraf": "^6.0.1"
