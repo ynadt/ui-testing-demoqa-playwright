@@ -149,3 +149,7 @@ vite.config.ts.timestamp-*
 .idea/
 .vscode/
 *.sublime*
+
+# Ignore test results
+test-results.json
+test-results.xml

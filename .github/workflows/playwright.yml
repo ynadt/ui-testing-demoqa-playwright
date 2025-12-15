@@ -2,66 +2,102 @@ name: Playwright Tests
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, master ]
-  # Run tests automatically every day at 02:00 UTC
+    branches: [ main ]
   schedule:
-    - cron: "0 2 * * *"
+    - cron: '0 0 * * *'  # Run daily at midnight UTC
+  workflow_dispatch:
+    inputs:
+      runThis:
+        description: 'Run specific tests by keyword (e.g., "alerts")'
+        required: false
 
 jobs:
   test:
-    name: Run Playwright tests
-    runs-on: ubuntu-latest
     timeout-minutes: 60
-
-    # Two viewport sizes tested in parallel
+    runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
+        browser: [chrome, firefox]
         viewport:
-          - "1920x1080"
-          - "1366x768"
-
+          - { width: 1920, height: 1080 }
+          - { width: 1366, height: 768 }
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: "npm"
+          node-version: 18
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
+      - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests (Chromium + Firefox) — ${{ matrix.viewport }}
-        run: |
-          VIEWPORT_WIDTH=$(echo ${{ matrix.viewport }} | cut -d'x' -f1)
-          VIEWPORT_HEIGHT=$(echo ${{ matrix.viewport }} | cut -d'x' -f2)
-          export VIEWPORT_WIDTH
-          export VIEWPORT_HEIGHT
-          echo "Viewport width=$VIEWPORT_WIDTH, height=$VIEWPORT_HEIGHT"
-          npx playwright test --workers=4
+      - name: Run Playwright tests
+        env:
+          VIEWPORT_WIDTH: ${{ matrix.viewport.width }}
+          VIEWPORT_HEIGHT: ${{ matrix.viewport.height }}
+          workers: 2
+          runThis: ${{ github.event.inputs.runThis }}
+          CI: true
+        run: npm test
 
-      - name: Upload Playwright HTML report
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: playwright-report-${{ matrix.viewport }}
-          path: playwright-report/
-          if-no-files-found: ignore
+          name: playwright-report-${{ matrix.browser }}-${{ matrix.viewport.width }}x${{ matrix.viewport.height }}
+          path: |
+            playwright-report/
+            test-results/
+            screenshots/
+            videos/
           retention-days: 30
 
-      - name: Upload test results (traces, screenshots, videos)
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: test-results-${{ matrix.viewport }}
-          path: test-results/
-          if-no-files-found: ignore
-          retention-days: 14
+          name: test-results-${{ matrix.browser }}-${{ matrix.viewport.width }}x${{ matrix.viewport.height }}
+          path: test-results.xml
+          retention-days: 30
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check code formatting
+        run: npm run lint:fix --dry-run
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run security audit
+        run: npm audit --audit-level=high
+
+      - name: Check for vulnerabilities
+        run: npm audit --audit-level=moderate

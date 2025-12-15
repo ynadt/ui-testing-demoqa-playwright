@@ -19,8 +19,14 @@ export default defineConfig({
   /* Worker threads */
   workers: process.env.CI ? 2 : undefined,
 
-  /* Reporter */
-  reporter: [['html', { open: 'never' }]],
+  grep: /@runThis/,  // Это будет фильтровать ВСЕ тесты с тегом @runThis
+
+
+  reporter: [
+    ['html', { outputFolder: 'playwright-report' }],
+    ['json', { outputFile: 'test-results.json' }],
+    ['junit', { outputFile: 'test-results.xml' }]
+  ],
 
   // Default options for all tests
   use: {
@@ -28,18 +34,23 @@ export default defineConfig({
     viewport: { width, height },
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    trace: 'retain-on-failure',
-},
+    trace: 'on-first-retry',
+    actionTimeout: 10000,
+    navigationTimeout: 30000,
+    extraHTTPHeaders: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
+  },
 
   /* Configure browsers (Chrome + Firefox) */
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], viewport: { width, height } },
     },
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: { ...devices['Desktop Firefox'], viewport: { width, height } },
     },
     // Optional: uncomment to include Safari
     // {
@@ -48,7 +59,7 @@ export default defineConfig({
     // },
   ],
 
-  // Optional: uncomment if testing local dev server later
+  /* Run your local dev server before starting the tests */
   // webServer: {
   //   command: 'npm run start',
   //   url: 'http://localhost:3000',

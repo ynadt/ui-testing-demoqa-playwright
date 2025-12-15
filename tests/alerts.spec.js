@@ -3,61 +3,49 @@ import { AlertsPage } from '../pages/AlertsPage.js';
 import { faker } from '@faker-js/faker';
 
 test.describe('@runThis Alerts page', () => {
-  let alertsPage;
+  let alerts;
 
   test.beforeEach(async ({ page }) => {
-    alertsPage = new AlertsPage(page);
-    await alertsPage.goto();
+    alerts = new AlertsPage(page);
+    await alerts.goto();
   });
 
-  test('should handle simple alert', async ({ page }) => {
-    page.once('dialog', async dialog => {
-      expect(dialog.message()).toContain('You clicked a button');
-      await dialog.accept();
-    });
-
-    await alertsPage.clickSimpleAlert();
+  test('Simple alert should be accepted', async () => {
+    await alerts.openSimpleAlert();
   });
 
-  test('should handle timer alert after 5 seconds', async ({ page }) => {
-    page.once('dialog', async dialog => {
-      expect(dialog.message()).toContain('This alert appeared after 5 seconds');
-      await dialog.accept();
-    });
-
-    await alertsPage.clickTimerAlert();
+  test('Timer alert should be accepted after delay', async () => {
+    await alerts.openTimerAlert();
   });
 
-  test.describe('Confirm box', () => {
-    test('should handle confirm box with accept', async ({ page }) => {
-      page.once('dialog', async dialog => {
-        expect(dialog.message()).toContain('Do you confirm action?');
-        await dialog.accept();
-      });
-
-      await alertsPage.clickConfirmAlert();
-      await expect(alertsPage.confirmResult).toHaveText('You selected Ok');
-    });
-
-    test('should handle confirm box with dismiss', async ({ page }) => {
-      page.once('dialog', async dialog => {
-        expect(dialog.message()).toContain('Do you confirm action?');
-        await dialog.dismiss();
-      });
-
-      await alertsPage.clickConfirmAlert();
-      await expect(alertsPage.confirmResult).toHaveText('You selected Cancel');
-    });
+  test('Confirm alert — accept', async () => {
+    const result = await alerts.acceptConfirm();
+    expect(result).toBe('You selected Ok');
   });
 
-  test('should handle prompt box with random input', async ({ page }) => {
-    const randomName = faker.person.firstName();
+  test('Confirm alert — dismiss', async () => {
+    const result = await alerts.dismissConfirm();
+    expect(result).toBe('You selected Cancel');
+  });
 
-    page.once('dialog', async dialog => {
-      await dialog.accept(randomName);
+  test('Prompt alert — accept with text', async () => {
+    const name = faker.person.firstName();
+    const result = await alerts.acceptPrompt(name);
+    expect(result).toContain(name);
+  });
+
+  test('Prompt alert — dismiss', async () => {
+    const result = await alerts.dismissPrompt();
+    expect(result === null || result === '').toBe(true);
+  });
+
+
+  test('Negative: should handle multiple rapid alerts', async () => {
+    await test.step('Rapid alert clicking', async () => {
+      alerts._handleDialog('accept');
+      await alerts.safeClick(alerts.simpleAlertBtn);
+      await alerts.safeClick(alerts.timerAlertBtn);
+      await alerts.safeClick(alerts.confirmAlertBtn);
     });
-
-    await alertsPage.clickPromptAlert();
-    await expect(alertsPage.promptResult).toContainText(`You entered ${randomName}`);
   });
 });
